@@ -103,5 +103,8 @@ endif()
 if(WIN32 AND NOT MSVC)
     target_link_libraries(${TARGET} PRIVATE ws2_32)
 endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+    target_link_libraries(${TARGET} PRIVATE socket)
+endif()
 
 target_compile_features(${TARGET} PUBLIC c_std_11 cxx_std_17)
