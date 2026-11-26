@@ -315,7 +315,10 @@ target_link_libraries(${SD_LIB} PUBLIC ggml zip)
 # On QNX the ggml-vulkan static archive contains SPIR-V shader data objects that
 # self-register via C++ global constructors with no externally-referenced symbols.
 # The linker silently drops them unless --whole-archive forces full inclusion.
-if(QNXNTO AND SD_BUILD_SHARED_LIBS AND SD_VULKAN)
+# With GGML_BACKEND_DL, ggml-vulkan is a loadable module, not a static archive:
+# its constructors run when ggml loads it, so --whole-archive is not needed
+# (and the module must not be linked into the library).
+if(QNXNTO AND SD_BUILD_SHARED_LIBS AND SD_VULKAN AND NOT GGML_BACKEND_DL)
     target_link_options(${SD_LIB} PRIVATE
         "LINKER:--whole-archive"
         $<TARGET_FILE:ggml-vulkan>
