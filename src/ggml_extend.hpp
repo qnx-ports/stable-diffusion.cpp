@@ -25,6 +25,9 @@
 
 #include "ggml-alloc.h"
 #include "ggml-backend.h"
+#ifdef GGML_USE_VULKAN
+#include "ggml-vulkan.h"
+#endif
 #include "ggml.h"
 #include "ggml_extend_backend.h"
 #include "ggml_graph_cut.h"
@@ -2414,6 +2417,11 @@ protected:
         int64_t t_offload_end = ggml_time_ms();
 
         int64_t t_alloc_begin = ggml_time_ms();
+#ifdef GGML_USE_VULKAN
+        // Record scratch sizes so the next alloc_compute_buffer() sub-allocates
+        // scratch from within the compute VkDeviceMemory (no fragmentation hole).
+        ggml_backend_vk_set_scratch_workspace_hint(runtime_backend, gf);
+#endif
         if (!alloc_compute_buffer(gf)) {
             LOG_ERROR("%s alloc compute buffer failed", get_desc().c_str());
             if (use_partial_param_offload) {
